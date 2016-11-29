@@ -126,6 +126,95 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
     }
 }
 
+bool is_number(const std::string& s)
+{
+    return !s.empty() && std::find_if(s.begin(), 
+        s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+}
+
+UniValue runscript(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw std::runtime_error(
+            "runscript \"OP OP2 [...]\"\n"
+            "Run the given script and return the resulting stack.\n"
+
+            "\nExamples:\n"
+            + HelpExampleCli("runscript", "\"OP_1 OP_ADD1\"")
+        );
+
+    LOCK(cs_main);
+    
+    std::vector<std::vector<unsigned char> > stack;
+    
+    std::string scriptString = params[0].get_str();
+    std::stringstream scriptReader(scriptString);
+
+    CScript script;
+    std::string s;
+    while (scriptReader.good()) {
+        scriptReader >> s;
+        if (s.length() == 0) continue;
+        opcodetype oct = GetOpFromName(s);
+        if (oct != OP_INVALIDOPCODE) {
+            script << oct;
+        } else if (s[0] == '0' || s[1] == 'x') {
+            script << ParseHex(s.substr(2));
+        } else if (is_number(s)) {
+            script << atoi(s.c_str());
+        } else {
+            throw std::runtime_error(
+                "Unable to interpret data (not an opcode, not a number, and not a hex value): " + s
+            );
+        }
+    }
+
+    ScriptError serror;
+    std::string error = "";
+    if (!EvalScript(stack, script, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), SIGVERSION_BASE, &serror)) {
+        const char* scriptError = ScriptErrorString(serror);
+        if (strlen(scriptError) > 0) {
+            error = std::string("Error occurred: ") + scriptError;
+        } else {
+            error = "An error occurred evaluating the script.";
+        }
+    }
+    
+    UniValue result(UniValue::VOBJ);
+    UniValue ustack(UniValue::VARR);
+    for (size_t i = 0; i < stack.size(); i++) {
+        std::vector<unsigned char> e = stack[i];
+        ustack.push_back(std::string("0x") + HexStr(e.begin(), e.end()));
+    }
+    result.push_back(Pair("stack", ustack));
+    if (error.length() > 0) result.push_back(Pair("error", error));
+    return result;
+}
+
+UniValue base58encode(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw std::runtime_error(
+            "base58encode \"hex\"\n"
+            "Generate base-58 encoding of the given hex value.\n"
+
+            "\nExamples:\n"
+            + HelpExampleCli("base58encode", "\"0x0bb90193b4868ad34f4db20ce3a5b4efe8a2439c\"")
+        );
+
+    LOCK(cs_main);
+    
+    std::string hexstr = params[0].get_str();
+    std::vector<unsigned char> hex;
+    if (hexstr[0] == '0' && hexstr[1] == 'x') {
+        hex = ParseHex(hexstr.substr(2));
+    } else {
+        hex = ParseHex(hexstr);
+    }
+    std::string b58 = EncodeBase58Check(hex);
+    return b58;
+}
+
 UniValue getrawtransaction(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() < 1 || params.size() > 2)
@@ -908,14 +997,21 @@ static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
     { "rawtransactions",    "getrawtransaction",      &getrawtransaction,      true  },
+    { "rawtransactions",    "grt",                    &getrawtransaction,      true  },
     { "rawtransactions",    "createrawtransaction",   &createrawtransaction,   true  },
+    { "rawtransactions",    "crt",                    &createrawtransaction,   true  },
     { "rawtransactions",    "decoderawtransaction",   &decoderawtransaction,   true  },
+    { "rawtransactions",    "drt",                    &decoderawtransaction,   true  },
     { "rawtransactions",    "decodescript",           &decodescript,           true  },
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     false },
+    { "rawtransactions",    "sendrt",                 &sendrawtransaction,     false },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     false }, /* uses wallet if enabled */
+    { "rawtransactions",    "signrt",                 &signrawtransaction,     false }, /* uses wallet if enabled */
 
     { "blockchain",         "gettxoutproof",          &gettxoutproof,          true  },
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       true  },
+    { "bc2",                "runscript",              &runscript,              true  },
+    { "bc2",                "base58encode",           &base58encode,           true  },
 };
 
 void RegisterRawTransactionRPCCommands(CRPCTable &tableRPC)
