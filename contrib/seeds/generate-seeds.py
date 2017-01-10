@@ -10,6 +10,7 @@ argument:
 
     nodes_main.txt
     nodes_test.txt
+    nodes_bc2.txt
 
 These files must consist of lines in the format 
 
@@ -126,6 +127,9 @@ def main():
     g.write(' * Each line contains a 16-byte IPv6 address and a port.\n')
     g.write(' * IPv4 as well as onion addresses are wrapped inside a IPv6 address accordingly.\n')
     g.write(' */\n')
+    with open(os.path.join(indir,'nodes_bc2.txt'),'r') as f:
+        process_nodes(g, f, 'pnSeed6_bc2', 8444)
+    g.write('\n')
     with open(os.path.join(indir,'nodes_main.txt'),'r') as f:
         process_nodes(g, f, 'pnSeed6_main', 8333)
     g.write('\n')
