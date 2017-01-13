@@ -40,7 +40,12 @@ const CLI = {
      * Example: create 0.001 "A pair of socks."
      */
     create(_, amountBTC, content) {
-        API.create(amountBTC, content, () => CLI.doneCallback());
+        API.create(amountBTC, content, (err) => {
+            if (err) {
+                console.log(`error: ${err}`.red);
+            }
+            CLI.doneCallback();
+        });
     },
     /**
      * List all invoices updated after `since` (optional; if unset, lists
