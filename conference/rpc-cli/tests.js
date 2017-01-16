@@ -27,6 +27,23 @@ let n2;
 let n3;
 let n4;
 
+let runtask1 = true;
+let runtask2 = true;
+let runtask3 = true;
+let runall = true;
+
+if (process.env.TASK) {
+  runall = runtask1 = runtask2 = runtask3 = false;
+  const t = process.env.TASK;
+  if (''+t === '1') runtask1 = true;
+  else if (''+t === '2') runtask2 = true;
+  else if (''+t === '3') runtask3 = true;
+  else {
+    console.log(`unknown task id ${t}; expected 1, 2, or 3; falling back to regular execution`);
+    runall = runtask1 = runtask2 = runtask3 = true;
+  }
+}
+
 const verbose = process.env.V === '1';
 const log = verbose ? (...args) => console.log(...args) : (...args) => {};
 const bcgraph = verbose ? (g1, g2) => graph.printBlockChainsS(g1, g2) : (g1, g2) => {};
@@ -164,6 +181,101 @@ describe('utxo generation', () => {
   });
 });
 
+if (runtask1 || runall)
+describe('invoice', function() {
+  it('can be created', function(done) {
+    this.timeout(20000);
+    const result = API.createS(1.0, INVOICE_CONTENT);
+    expect(result).to.exist;
+    expect(result.insertedIds).to.exist;
+    expect(result.insertedIds.length).to.equal(1);
+    const [ invoiceid ] = result.insertedIds;
+    expect(invoiceid).to.exist;
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(invoice).to.exist;
+    expect(state).to.exist;
+    expect(invoice.addr).to.exist;
+    const addrinfo = bitcoin.validateAddressS(invoice.addr).result;
+    expect(addrinfo).to.exist;
+    expect(addrinfo.isvalid);
+    expect(addrinfo.ismine);
+    expect(addrinfo.pubkey).to.exist;
+    done();
+  });
+});
+
+if (runtask2 || runall)
+describe('payment', function() {
+  let invoiceid;
+  let txid;
+  // confirmations < 6のpaymentはpendingである
+  it('updates status to pending', function(done) {
+    this.timeout(20000);
+    net.partitionS(nodes, 2);
+    const result = API.createS(1, INVOICE_CONTENT);
+    invoiceid = result.insertedIds[0];
+    const startingInvoice = API.infoS(invoiceid).invoice;
+    txid = n2.sendToAddressS(startingInvoice.addr, 1);
+    const blocks = n2.generateBlocksS(1);
+    API.waitForChangeS(blocks[0], 15000);
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(state.payments.length).to.be.equal(1);
+    const [ payment ] = state.payments;
+    expect(payment.status).to.equal('pending');
+    done();
+  });
+
+  // confirmations >= 6のpaymentはconfirmedである
+  it('updates status to confirmed', function(done) {
+    this.timeout(20000);
+    const blocks = n2.generateBlocksS(5);
+    API.waitForChangeS(blocks[4], 15000);
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(state.payments.length).to.be.equal(1);
+    const [ payment ] = state.payments;
+    expect(payment.status).to.equal('confirmed');
+    done();
+  });
+
+  // ブロックから外れちゃったpaymentはreorgというステータスになる
+  it('updates status to reorg', function(done) {
+    this.timeout(20000);
+    const blocks = n3.generateBlocksS(7);
+    net.mergeS(nodes);
+    API.waitForChangeS(blocks[6], 15000);
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(state.payments.length).to.be.equal(1);
+    const [ payment ] = state.payments;
+    expect(payment.status).to.equal('reorg');
+    done();
+  });
+
+  // ブロックチェーンに戻った時に、pendingになる
+  it('restores status to pending', function(done) {
+    this.timeout(20000);
+    const blocks = n2.generateBlocksS(1);
+    API.waitForChangeS(blocks[1], 15000);
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(state.payments.length).to.be.equal(1);
+    const [ payment ] = state.payments;
+    expect(payment.status).to.equal('pending');
+    done();
+  });
+
+  // confirmations >= 6では、またconfirmedになる
+  it('restores status to confirmed', function(done) {
+    this.timeout(20000);
+    const blocks = n2.generateBlocksS(5);
+    API.waitForChangeS(blocks[5], 15000);
+    const { invoice, state } = API.infoS(invoiceid);
+    expect(state.payments.length).to.be.equal(1);
+    const [ payment ] = state.payments;
+    expect(payment.status).to.equal('confirmed');
+    done();
+  });
+});
+
+if (runtask3 || runall) {
 describe('invoice status', function() {
   const make_and_pay = (self, invamount, payments, blockgen = 1) => {
     self.timeout(20000);
@@ -254,7 +366,7 @@ describe('reorg unconfirm then reconfirm into another block:', function() {
       done();
     }
   });
-  
+
   it('populates history with observed transaction', function(done) {
     this.timeout(15000);
     log('[GENERATE blocks on node 1]');
@@ -275,7 +387,7 @@ describe('reorg unconfirm then reconfirm into another block:', function() {
     bcgraph(grp1, grp2);
     done();
   });
-  
+
   it('puts payment as unconfirmed after reorg', function(done) {
     this.timeout(12000);
     log('[Reconnect partitions]');
@@ -300,7 +412,7 @@ describe('reorg unconfirm then reconfirm into another block:', function() {
     expect(orderedActionsInHistory(history, ['create', 'receive', 'reorg'])).to.be.true;
     done();
   });
-  
+
   it('detects reconfirm', function(done) {
     this.timeout(10000);
     log('[GENERATE block on node 1 to reconfirm transaction.]');
@@ -342,7 +454,7 @@ describe('double spend (replace payment to other address)', () => {
     expect(actionExistsInHistory(history, 'create')).to.be.true;
     done();
   });
-  
+
   it('pays invoice', function(done) {
     this.timeout(30000);
     const utxo = n2.findSpendableOutputS(1);
@@ -373,14 +485,14 @@ describe('double spend (replace payment to other address)', () => {
     log(`- double spend txid = ${txid2}`);
     done();
   });
-  
+
   // at this point, we have two partitions (n1-n2, n3-n4), where the former
-  // group thinks the transaction has gone to the invoice address, and the 
+  // group thinks the transaction has gone to the invoice address, and the
   // latter group thinks it's been sent to n3's own address
   // i.e. a double spend to two separate addresses
   // NOTE: the rpc-cli API is hooked up to n1, so it thinks the invoice has been
   // paid at this point
-  
+
   it('populates history with observed transaction', function(done) {
     this.timeout(20000);
     log('[GENERATE six blocks on node 1]');
@@ -395,7 +507,7 @@ describe('double spend (replace payment to other address)', () => {
     API.waitForStatusS(invoice2, 'paid');
     done();
   });
-  
+
   it('detects double spend', function(done) {
     this.timeout(30000);
     log('[GENERATE six blocks on node 4]');
@@ -461,10 +573,10 @@ describe('double spend replace (payment to same address)', () => {
     expect(actionExistsInHistory(history, 'create')).to.be.true;
     done();
   });
-  
+
   let firsttx;
   let secondtx;
-  
+
   it('pays invoice', function(done) {
     this.timeout(40000);
     const utxo = n2.findSpendableOutputS(1);
@@ -479,9 +591,8 @@ describe('double spend replace (payment to same address)', () => {
     expect(txid).to.exist;
     log(`- payment txid = ${txid}`);
     expect(n1.isConnected(n2, true)).to.be.true;
-    console.log(`${new Date()}: START n1.waitFor(${txid})`);
-    const result = n1.waitForTransactionS(txid, 15000);
-    console.log(`${new Date()}: END   n1.waitFor(${txid})`);
+    n2.generateBlocksS(1);
+    const result = n1.waitForTransactionS(txid, 5000);
     if (!result) {
       finalize('!result', () => {
         expect(result).to.not.be.false;
@@ -505,13 +616,13 @@ describe('double spend replace (payment to same address)', () => {
     }
     done();
   });
-  
+
   it('populates history with observed transaction', function(done) {
     this.timeout(20000);
     log('[GENERATE six blocks on node 1]');
-    const blocks = n1.generateBlocksS(6);
+    const blocks = n1.generateBlocksS(5);
     net.syncS([n1, n2]);
-    API.waitForChangeS(blocks[5], 10000);
+    API.waitForChangeS(blocks[4], 10000);
     log('block chain after gen (n1,n2   n3,n4):');
     bcgraph(grp1, grp2);
     // HISTORY: invoice3, <some payment>, { action: 'receive' }
@@ -520,7 +631,7 @@ describe('double spend replace (payment to same address)', () => {
     API.waitForStatusS(invoice3, 'paid');
     done();
   });
-  
+
   it('detects double spend', function(done) {
     this.timeout(30000);
     log('[GENERATE six blocks on node 4]');
@@ -600,6 +711,8 @@ describe('double spend replace (payment to same address)', () => {
   });
 });
 
+} // if (runtask3 || runall)
+
 //==============================================================================
 //==============================================================================
 //==============================================================================
@@ -613,7 +726,7 @@ describe('cleanup', () => {
       done();
     });
   });
-  
+
   it('clears relevant payments', (done) => {
     async.eachSeries(
       invoices,
@@ -624,7 +737,7 @@ describe('cleanup', () => {
       done
     );
   });
-  
+
   it('clears relevant history', (done) => {
     async.eachSeries(
       invoices,
@@ -635,7 +748,7 @@ describe('cleanup', () => {
       done
     );
   });
-  
+
   it('clears relevant invoices', (done) => {
     db.remove('invoice', { content: INVOICE_CONTENT }, (err) => {
       expect(err).to.be.null;
