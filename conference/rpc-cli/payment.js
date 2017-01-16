@@ -179,7 +179,7 @@ const payment = {
                 if (d.address === addr) {
                     assert(d.amount);
                     transaction.address = d.address;
-                    transaction.amount = Math.abs(d.amount);;
+                    transaction.amount = Math.abs(d.amount);
                     return true;
                 }
             }
@@ -196,7 +196,7 @@ const payment = {
         if (transaction.address) addresses.push([ transaction.address, transaction.amount ]);
         if (transaction.details) {
             for (const d of transaction.details) {
-                addresses.push([ d.address, Math.abs(d.amount); ]);
+                addresses.push([ d.address, Math.abs(d.amount) ]);
             }
         }
         let invoice;
