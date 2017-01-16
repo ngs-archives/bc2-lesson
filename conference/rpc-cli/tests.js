@@ -195,6 +195,7 @@ describe('invoice', function() {
     expect(invoice).to.exist;
     expect(state).to.exist;
     expect(invoice.addr).to.exist;
+    expect(typeof(invoice.addr)).to.equal('string');
     const addrinfo = bitcoin.validateAddressS(invoice.addr).result;
     expect(addrinfo).to.exist;
     expect(addrinfo.isvalid);
