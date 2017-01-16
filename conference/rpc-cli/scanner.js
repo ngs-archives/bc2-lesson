@@ -5,33 +5,11 @@ const bitcoin = require('./bitcoin');
 const payment = require('./payment');
 const assert = require('assert');
 const async = require('async');
+const { lpad, rpad, numpad } = require('./utils');
 const model = {
     invoice: require('./models/invoice'),
     state: require('./models/state'),
     payment: require('./models/payment'),
-};
-
-const spaces = '             ';
-const lpad = (s, l) => {
-    if (s.length >= l) return s;
-    const x = (spaces + s);
-    return x.substr(x.length-l);
-};
-const rpad = (s, l) => {
-    if (s.length >= l) return s;
-    const x = (s + spaces);
-    return x.substr(0, l);
-};
-const numpad = (numstr, leftl, rightl) => {
-    if (numstr.length > (leftl + rightl - 1)) return numstr;
-    const [left, right] = numstr.split('.');
-    if (left.length  > leftl) rightl -= left.length  - leftl;
-    if (right) {
-        if (right.length > rightl) leftl -= right.length - rightl;
-        return `${lpad(left, leftl)}.${rpad(right, rightl)}`;
-    } else {
-        return lpad(left, leftl);
-    }
 };
 
 const txArrayString = (vtx) => {

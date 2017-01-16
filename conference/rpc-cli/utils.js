@@ -1,6 +1,8 @@
 const deasync = require('deasync');
 const colors = require('colors');
 
+const spaces = '                             ';
+
 const utils = {
     verifyBTC(btc) {
         return (Math.trunc(btc * 100000000) / 100000000) == btc;
@@ -24,6 +26,27 @@ const utils = {
             }
         }
         console.log(v.substr(0, v.length - 1));
+    },
+    lpad(s, l) {
+        if (s.length >= l) return s;
+        const x = (spaces + s);
+        return x.substr(x.length-l);
+    },
+    rpad(s, l) {
+        if (s.length >= l) return s;
+        const x = (s + spaces);
+        return x.substr(0, l);
+    },
+    numpad(numstr, leftl, rightl) {
+        if (numstr.length > (leftl + rightl - 1)) return numstr;
+        const [left, right] = numstr.split('.');
+        if (left.length  > leftl) rightl -= left.length  - leftl;
+        if (right) {
+            if (right.length > rightl) leftl -= right.length - rightl;
+            return `${utils.lpad(left, leftl)}.${utils.rpad(right, rightl)}`;
+        } else {
+            return utils.lpad(left, leftl);
+        }
     },
     deasyncObject(object, synchronousByNature = []) {
         const target = object.prototype || object;

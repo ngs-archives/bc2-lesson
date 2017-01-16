@@ -179,7 +179,7 @@ const payment = {
                 if (d.address === addr) {
                     assert(d.amount);
                     transaction.address = d.address;
-                    transaction.amount = d.amount;
+                    transaction.amount = Math.abs(d.amount);;
                     return true;
                 }
             }
@@ -196,7 +196,7 @@ const payment = {
         if (transaction.address) addresses.push([ transaction.address, transaction.amount ]);
         if (transaction.details) {
             for (const d of transaction.details) {
-                addresses.push([ d.address, d.amount ]);
+                addresses.push([ d.address, Math.abs(d.amount); ]);
             }
         }
         let invoice;
@@ -223,6 +223,7 @@ const payment = {
     createPaymentWithTransaction(transactionIn, cb) {
         this.findInvoiceForTransaction(transactionIn, (err, { transaction, invoice }) => {
             if (err) return cb(err);
+            if (!invoice) return cb('invoice not found for transaction');
             model.payment.create(transaction.txid, transaction.address, invoice._id, transaction.amount, (crtErr, crtRes) => {
                 if (!crtErr)
                     this.sig('payment.created', { transaction, invoice, paymentId: crtRes.insertedIds[0] });
@@ -235,6 +236,7 @@ const payment = {
      */
     updatePaymentWithTransaction(payment, transactionIn, cb) {
         this.findInvoiceForTransaction(transactionIn, (err, { transaction, invoice }) => {
+            if (!invoice) return cb('invoice not found for transaction');
             if (model.payment.upToDate(payment, transaction)) return cb(null, invoice._id);
             model.payment.update(transaction.txid, transaction.address, invoice._id, transaction.amount, (updErr, updRes) => {
                 if (!updErr)

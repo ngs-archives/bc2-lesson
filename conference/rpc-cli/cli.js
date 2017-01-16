@@ -4,8 +4,11 @@ const model = {
 const assert = require('assert');
 const utils = require('./utils');
 const deasync = require('deasync');
+const payment = require('./payment');
 
 const API = require('./api');
+
+const { rpad } = utils;
 
 const run = (cmd, ...args) => CLI[cmd](cmd, ...args);
 
@@ -40,12 +43,7 @@ const CLI = {
      * Example: create 0.001 "A pair of socks."
      */
     create(_, amountBTC, content) {
-        API.create(amountBTC, content, (err) => {
-            if (err) {
-                console.log(`error: ${err}`.red);
-            }
-            CLI.doneCallback();
-        });
+        API.create(amountBTC, content, () => CLI.doneCallback());
     },
     /**
      * List all invoices updated after `since` (optional; if unset, lists
@@ -53,12 +51,16 @@ const CLI = {
      */
     list(_, since) {
         let found = false;
-        console.log('invoice:\t\t\tamount:\tstatus:\t\tconf:\tpending:'.cyan);
+        console.log(`${rpad('invoice:', 31)} ${rpad('amount:', 7)} ${rpad('status:', 15)} ${rpad('conf:', 10)} pending:`);
         API.iterInvoices(
             since,
             (invoice, state, callback) => {
                 found = true;
-                console.log(`${invoice._id}\t${utils.btcFromSatoshi(invoice.amount)}\t${state.updated || invoice.status}\t\t${utils.btcFromSatoshi(state.finalAmount)} BTC\t${utils.btcFromSatoshi(state.pendingAmount)} BTC`[invoice.status === 'paid' ? 'green' : 'red']);
+                console.log(`${rpad(''+invoice._id, 31)} \
+${rpad(utils.btcFromSatoshi(invoice.amount), 7)} \
+${rpad(state.updated || invoice.status, 15)} \
+${rpad(utils.btcFromSatoshi(state.finalAmount) + ' BTC', 10)} \
+${utils.btcFromSatoshi(state.pendingAmount)} BTC`[invoice.status === 'paid' ? 'green' : 'red']);
                 callback();
             },
             () => {
