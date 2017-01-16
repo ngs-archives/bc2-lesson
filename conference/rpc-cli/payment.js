@@ -63,6 +63,8 @@ const payment = {
                 let finalAmount = 0;    // 確認した金額のサム
                 let totalAmount = 0;    // 全ての金額のサム（未確認＋確認）
                 let disabledAmount = 0; // 消えた（あったけどなくなった）金額のサム
+                let minConfirms = 999;  // 一番低いconfirmationsの値
+                let maxConfirms = 0;    // 一番高いconfirmationsの値
 
 
                 async.eachSeries(
@@ -96,9 +98,6 @@ const payment = {
                             // ここでは、一つのinvoiceに対するそれぞれのpaymentを一つずつ見ていく。
                             // paymentの情報を確認し、TASK 3にinvoiceのstatusをアップデートする。
                             // 最後にmodel.payment.setStatusを実行すること。
-                            // ３０行くらい上の
-                            //      invoiceのstatusに必要な変数
-                            // というところに、変数を入れる必要がある。
 
 
                             // TODO: TASK 2のコードをここに入れて！
