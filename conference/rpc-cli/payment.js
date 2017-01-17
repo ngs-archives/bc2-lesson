@@ -35,6 +35,7 @@ const payment = {
         // 非同期プログラミングが詳しくない方はちょっと勉強した方が良いかもしれない。
 
 
+        // 注意：下の一行を消さないとならない。createInvoiceが止まらないように入れてある。
         cb('まだ書いてません！');
     },
     paymentStatusWithColor(status) {
