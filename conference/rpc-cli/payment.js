@@ -58,6 +58,7 @@ const payment = {
             if (invoices.length === 0) return cb("invoice " + invoiceId + " not found");
             const invoice = invoices[0];
             model.payment.findByAddr(invoice.addr, (pmtErr, payments) => {
+                if (pmtErr) return cb(pmtErr);
 
 
                 // invoiceのstatusに必要な変数
