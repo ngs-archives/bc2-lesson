@@ -192,6 +192,7 @@ const payment = {
                 }
             }
         }
+        transaction.address = addr;
     },
     /**
      * Locate the invoice for the given transaction, by looking at all its
