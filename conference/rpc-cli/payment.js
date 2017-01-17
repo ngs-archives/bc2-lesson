@@ -174,18 +174,17 @@ const payment = {
      * set to the values for the given address.
      */
     matchTransactionToAddress(transaction, addr) {
-        if (transaction.address === addr) return true;
+        if (transaction.address === addr) return;
         if (transaction.details) {
             for (const d of transaction.details) {
                 if (d.address === addr) {
                     assert(d.amount);
                     transaction.address = d.address;
                     transaction.amount = Math.abs(d.amount);
-                    return true;
+                    return;
                 }
             }
         }
-        return false;
     },
     /**
      * Locate the invoice for the given transaction, by looking at all its
