@@ -146,6 +146,8 @@ describe('bitcoind', () => {
   });
 });
 
+let bitcointestOK = false;
+
 describe('bitcointest', () => {
   it('configures', function(done) {
     this.timeout(50000);
@@ -154,7 +156,15 @@ describe('bitcointest', () => {
     [ n1, n2, n3, n4 ] = nodes;
     net.waitForNodesS(nodes, 50000);
     net.connectNodesS(nodes);
+    bitcointestOK = true;
     done();
+  });
+
+  it('works', function(done) {
+    if (!bitcointestOK) {
+      console.log('\n\n*** ERROR : bitcoind cannot be started!\n*** ERROR : please do:\n         killall -9 bitcoind\n*** ERROR : and try again!\n\n'.red);
+      process.exit(1);
+    }
   });
 });
 
