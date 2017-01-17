@@ -2,7 +2,7 @@ const config = {
     bitcoind: {
         host: process.env.BITCOIND_HOST || 'localhost',
         rpcport: process.env.BITCOIND_RPCPORT || 18442,
-        user: process.env.BITCOIND_USER || 'username',
+        user: process.env.BITCOIND_USER || 'user',
         pass: process.env.BITCOIND_PASS || 'password',
     },
     minimumSatoshi: process.env.MIN_SATOSHI || 10000,
