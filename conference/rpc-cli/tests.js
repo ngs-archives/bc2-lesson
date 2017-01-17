@@ -165,6 +165,7 @@ describe('bitcointest', () => {
       console.log('\n\n*** ERROR : bitcoind cannot be started!\n*** ERROR : please do:\n         killall -9 bitcoind\n*** ERROR : and try again!\n\n'.red);
       process.exit(1);
     }
+    done();
   });
 });
 
