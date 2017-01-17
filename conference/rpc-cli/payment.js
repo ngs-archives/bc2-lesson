@@ -98,8 +98,10 @@ const payment = {
 
                             // TASK 2: paymentの対応
                             // ここでは、一つのinvoiceに対するそれぞれのpaymentを一つずつ見ていく。
-                            // paymentの情報を確認し、TASK 3にinvoiceのstatusをアップデートする。
+                            // paymentの情報を確認、集計し、
+                            // TASK 3でinvoiceのstatusをアップデートする。
                             // 最後にmodel.payment.setStatusを実行すること。
+                            // TODO: 上で定義したinvoiceのstatusに必要な変数を更新する
 
 
                             // TODO: TASK 2のコードをここに入れて！
@@ -133,8 +135,9 @@ const payment = {
                         // ここでは、集めた情報（変数）を使って、invoiceのステータスを
                         // アップデートする。
                         // アップデートが終わったら、cb (callback)を呼ぶ。これは
-                        // cbwrapというヘルプ関数がやる。そのために以下の変数の値を
-                        // 入れて下さい。
+                        // cbwrapというヘルプ関数がやる。
+                        // TODO: そのために以下の変数の値をTASK2で集計した変数を利用して
+                        //       入れて下さい。
 
                         const confirmations = 0; // このinvoiceのconfirmationsは何個ある？複数のpaymentがある場合、どう考えれば良い？
                         const pendingAmount = 0; // 未確認の金額だけ
@@ -142,8 +145,6 @@ const payment = {
                         const totalRem = 0; // 全部の払われた金額で、払ってない金額はいくら？
                         const finalMatch = 0; // 確認済みで、払ってもらった金額はぴったり（true）かそうでない（false）か
                         const totalMatch = 0; // 未確認＋確認済みの場合
-
-                        // TODO: 上の変数の値を直して下さい
 
                         const cbwrap = (err, updated) => {
                             // console.log(`${updated ? '!!!' : '...'} c=${confirmations} fr=${finalRem} tr=${totalRem} fm=${finalMatch} tm=${totalMatch}`);
