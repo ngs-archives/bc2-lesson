@@ -172,6 +172,10 @@ const payment = {
      * Transactions sometimes send to multiple addresses simultaneously.
      * We tweak the transaction so that its address and amount values are
      * set to the values for the given address.
+     *
+     * Note: the system will NOT detect multiple sends to the same address
+     * within the same transaction. These cases will result in a loss for the
+     * sender until the database is updated manually.
      */
     matchTransactionToAddress(transaction, addr) {
         if (transaction.address === addr) return;
