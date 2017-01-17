@@ -143,6 +143,8 @@ const payment = {
                         const finalMatch = 0; // 確認済みで、払ってもらった金額はぴったり（true）かそうでない（false）か
                         const totalMatch = 0; // 未確認＋確認済みの場合
 
+                        // TODO: 上の変数の値を直して下さい
+
                         const cbwrap = (err, updated) => {
                             // console.log(`${updated ? '!!!' : '...'} c=${confirmations} fr=${finalRem} tr=${totalRem} fm=${finalMatch} tm=${totalMatch}`);
                             if (!err && updated) this.sig('invoice.updated', { invoiceId, status: updated });
