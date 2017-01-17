@@ -248,6 +248,10 @@ describe('payment', function() {
     expect(state.payments.length).to.be.equal(1);
     const [ payment ] = state.payments;
     expect(payment.status).to.equal('reorg');
+    const history = API.historyS(invoiceid);
+    lastHistory = history;
+    found = orderedActionsInHistory(history, ['create', 'receive', 'reorg']);
+    expect(found).to.be.true;
     done();
   });
 
