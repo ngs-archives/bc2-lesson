@@ -54,6 +54,11 @@ const model = {
             );
         });
     },
+    /**
+     * Update status. Available modes:
+     * - unpaid, partial, paid, overpaid,
+     *   pending_partial, pending_paid, pending_overpaid
+     */
     updateStatus(invoiceId, newStatus, cb) {
         assert(invoiceId);
         assert(newStatus);
