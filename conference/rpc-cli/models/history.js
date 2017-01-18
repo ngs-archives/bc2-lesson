@@ -40,7 +40,7 @@ const model = {
         const query = {};
         if (invoice) query.invoice = '' + invoice;
         if (payment) query.payment = '' + payment;
-        db.find('history', query, cb);
+        db.find('history', query, { _id:1 }, cb);
     }
 };
 
