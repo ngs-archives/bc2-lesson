@@ -143,8 +143,8 @@ const payment = {
                         const pendingAmount = 0; // 未確認の金額だけ
                         const finalRem = 0; // 確認済みの払われた金額で、払ってない金額はいくら？
                         const totalRem = 0; // 全部の払われた金額で、払ってない金額はいくら？
-                        const finalMatch = 0; // 確認済みで、払ってもらった金額はぴったり（true）かそうでない（false）か
-                        const totalMatch = 0; // 未確認＋確認済みの場合
+                        const finalMatch = false; // 確認済みで、払ってもらった金額はぴったり（true）かそうでない（false）か
+                        const totalMatch = false; // 未確認＋確認済みの場合
 
                         const cbwrap = (err, updated) => {
                             // console.log(`${updated ? '!!!' : '...'} c=${confirmations} fr=${finalRem} tr=${totalRem} fm=${finalMatch} tm=${totalMatch}`);
