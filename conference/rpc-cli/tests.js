@@ -249,6 +249,8 @@ describe('payment', function() {
     done();
   });
 
+  let inState;
+
   // ブロックから外れちゃったpaymentはreorgというステータスになる
   it('updates status to reorg', function(done) {
     this.timeout(20000);
@@ -256,6 +258,7 @@ describe('payment', function() {
     net.mergeS(nodes);
     API.waitForChangeS(blocks[6], 15000);
     const { invoice, state } = API.infoS(invoiceid);
+    inState = state;
     expect(state.payments.length).to.be.equal(1);
     const [ payment ] = state.payments;
     expect(payment.status).to.equal('reorg');
@@ -263,6 +266,13 @@ describe('payment', function() {
     lastHistory = history;
     found = orderedActionsInHistory(history, ['create', 'receive', 'reorg']);
     expect(found).to.be.true;
+    done();
+  });
+
+  it('sets disabledAmount for reorg', function(done) {
+    // amounts are slightly off sometimes (e.g. by 1 satoshi)
+    expect(inState.disabledAmount).to.be.above( 90000000);
+    expect(inState.disabledAmount).to.be.below(110000000);
     done();
   });
 
