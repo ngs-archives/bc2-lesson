@@ -34,9 +34,6 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.vtx.push_back(txNew);
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-    // if (DetermineNonceRequired(genesis, nBits)) {
-    //     DetermineNonce(genesis, nBits);
-    // }
     return genesis;
 }
 
@@ -88,7 +85,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
-                                                                                       
+
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1462060800; // May 1st, 2016
@@ -118,7 +115,7 @@ public:
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
-        
+
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.push_back(CDNSSeedData("bitcoin.sipa.be", "seed.bitcoin.sipa.be", true)); // Pieter Wuille, only supports x1, x5, x9, and xd
         vSeeds.push_back(CDNSSeedData("bluematt.me", "dnsseed.bluematt.me", true)); // Matt Corallo, only supports x9
@@ -203,18 +200,18 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStart[0] = 0xfa;
-        pchMessageStart[1] = 0xbf;
-        pchMessageStart[2] = 0xb5;
-        pchMessageStart[3] = 0xda;
+        pchMessageStart[0] = 0xea;
+        pchMessageStart[1] = 0xaf;
+        pchMessageStart[2] = 0xa5;
+        pchMessageStart[3] = 0xca;
         nDefaultPort = 8444;
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1231006505, 51990733, 0x1d7fffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1483467305, 53745805, 0x1d7fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0000003f47b7abca4ee63eb925c70bcc0bf780fbec81ad164348de1edf6a6265"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000000aaef3f699d6417fb8491c92871154aed8908803453d7336e3c2a3ed71"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
-        
+
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.push_back(CDNSSeedData("172.16.120.201", "172.16.120.201", true));
         vSeeds.push_back(CDNSSeedData("172.16.130.201", "172.16.130.201", true));
@@ -456,4 +453,3 @@ void UpdateRegtestBIP9Parameters(Consensus::DeploymentPos d, int64_t nStartTime,
 {
     regTestParams.UpdateBIP9Parameters(d, nStartTime, nTimeout);
 }
- 
