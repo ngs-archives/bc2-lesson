@@ -149,7 +149,7 @@ const payment = {
                         const cbwrap = (err, updated) => {
                             // console.log(`${updated ? '!!!' : '...'} c=${confirmations} fr=${finalRem} tr=${totalRem} fm=${finalMatch} tm=${totalMatch}`);
                             if (!err && updated) this.sig('invoice.updated', { invoiceId, status: updated });
-                            const keepWatching = confirmations < 100 || !finalMatch || totalAmount > 0;
+                            const keepWatching = confirmations < 100 || !finalMatch || pendingAmount > 0;
                             const finalcb = () => cb(err, { payments, confirmations, updated, finalAmount, pendingAmount, disabledAmount, finalMatch, totalMatch });
                             if (keepWatching !== invoice.watched) {
                                 model.invoice.setWatchedState(invoiceId, keepWatching, finalcb);
