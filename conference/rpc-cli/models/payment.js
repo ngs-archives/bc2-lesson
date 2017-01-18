@@ -28,6 +28,8 @@ const model = {
         );
     },
     upToDate(payment, transaction) {
+        assert(payment);
+        assert(transaction);
         return (payment.amount === transaction.amount);
     },
     update(txid, addr, invoice, amount, cb = null) {
@@ -51,6 +53,9 @@ const model = {
         });
     },
     setStatus(paymentId, status, cb) {
+        assert(paymentId);
+        assert(status);
+        assert(cb);
         this.findById(paymentId, (err, result) => {
             if (err) return cb(err);
             const [ payment ] = result;
