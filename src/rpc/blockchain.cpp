@@ -35,6 +35,10 @@ double GetDifficulty(const CBlockIndex* blockindex)
 {
     // Floating point number that is a multiple of the minimum difficulty,
     // minimum difficulty = 1.0.
+    uint32_t compactPowLimit = UintToArith256(Params().GetConsensus().powLimit).GetCompact();
+    int shiftTarget = (compactPowLimit & 0xff000000) >> 24;
+    uint32_t rem = compactPowLimit  & 0x00ffffff;
+    
     if (blockindex == NULL)
     {
         if (chainActive.Tip() == NULL)
@@ -44,16 +48,16 @@ double GetDifficulty(const CBlockIndex* blockindex)
     }
 
     int nShift = (blockindex->nBits >> 24) & 0xff;
-
+    
     double dDiff =
-        (double)0x0000ffff / (double)(blockindex->nBits & 0x00ffffff);
+        (double)rem / (double)(blockindex->nBits & 0x00ffffff);
 
-    while (nShift < 29)
+    while (nShift < shiftTarget)
     {
         dDiff *= 256.0;
         nShift++;
     }
-    while (nShift > 29)
+    while (nShift > shiftTarget)
     {
         dDiff /= 256.0;
         nShift--;
@@ -1009,7 +1013,7 @@ UniValue getchaintips(const UniValue& params, bool fHelp)
     LOCK(cs_main);
 
     /*
-     * Idea:  the set of chain tips is chainActive.tip, plus orphan blocks which do not have another orphan building off of them. 
+     * Idea:  the set of chain tips is chainActive.tip, plus orphan blocks which do not have another orphan building off of them.
      * Algorithm:
      *  - Make one pass through mapBlockIndex, picking out the orphan blocks, and also storing a set of the orphan block's pprev pointers.
      *  - Iterate through the orphan blocks. If the block isn't pointed to by another orphan, it is a chain tip.
