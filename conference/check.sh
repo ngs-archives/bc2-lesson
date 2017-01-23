@@ -203,11 +203,12 @@ ok "nodejs=$(which $NODE)"
 
 GOTNODEVER=$($NODE -v)
 EXPNODEVERPREFIX="v7."
+EXPNODEVERPREFIX2="v6.9."
 
-if [ "${GOTNODEVER:0:${#EXPNODEVERPREFIX}}" != "$EXPNODEVERPREFIX" ]; then
+if [ "${GOTNODEVER:0:${#EXPNODEVERPREFIX}}" != "$EXPNODEVERPREFIX" ] && [ "${GOTNODEVER:0:${#EXPNODEVERPREFIX2}}" != "$EXPNODEVERPREFIX2" ]; then
     warn "node.jsのバージョンが想定外です。"
     warn "  現在：$GOTNODEVER"
-    warn "  想定：$EXPNODEVERPREFIX*"
+    warn "  想定：$EXPNODEVERPREFIX* 若しくは $EXPNODEVERPREFIX2*"
     err "想定外のnode.jsバージョン"
 fi
 ok "バージョン確認"
