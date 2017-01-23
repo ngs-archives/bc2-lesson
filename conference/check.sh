@@ -142,10 +142,10 @@ fexistchk ./bitcoind "$HINT"
 fexistchk ./bitcoin-cli "$HINT"
 
 SHORTCOMMIT=${LATESTCOMMIT:0:7}
-EXPVERSION="BC2-Bitcoin Core RPC client version v0.13.2.0-$SHORTCOMMIT"
 GOTVERSION=$(./bitcoin-cli -version)
+EXPVERSION="BC2-Bitcoin Core RPC client version v0.13.2.0-$SHORTCOMMIT"
 
-if [ "$EXPVERSION" != "$GOTVERSION" ]; then
+if [ "${GOTVERSION:0:${#EXPVERSION}}" != "$EXPVERSION" ]; then
     warn "バージョンが違います。"
     warn "  現在：$GOTVERSION"
     warn "  想定：$EXPVERSION"
