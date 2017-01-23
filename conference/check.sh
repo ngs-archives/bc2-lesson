@@ -257,5 +257,7 @@ elif [ "$HOST_OS" = "macos" ]; then
 fi    
 ok "MongoDB確認"
 
+echo ""
 ok "*** Ａｌｌ　Ｃｌｅａｒ ***"
 ok "Welcome to ＢＣ２！"
+echo ""
