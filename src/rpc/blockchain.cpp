@@ -962,6 +962,25 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
     return obj;
 }
 
+UniValue convertcompact(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "convertcompact\n"
+            "Converts a compact number to a full hash value.\n"
+        );
+
+    std::string strCompact = params[0].get_str();
+    uint32_t compact;
+    sscanf(strCompact.c_str(), "%x", &compact);
+    arith_uint256 a;
+    a.SetCompact(compact);
+    UniValue res(UniValue::VOBJ);
+    res.push_back(Pair("compact", strCompact));
+    res.push_back(Pair("full", a.ToString()));
+    return res;
+}
+
 /** Comparison function for sorting the getchaintips heads.  */
 struct CompareBlocksByHeight
 {
@@ -1197,6 +1216,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getbestblockhash",       &getbestblockhash,       true  },
     { "blockchain",         "getblockcount",          &getblockcount,          true  },
     { "blockchain",         "getblock",               &getblock,               true  },
+    { "blockchain",         "convertcompact",         &convertcompact,         true  },
     { "blockchain",         "gb",                     &getblock,               true  },
     { "blockchain",         "getblockhash",           &getblockhash,           true  },
     { "blockchain",         "gbh",                    &getblockhash,           true  },
