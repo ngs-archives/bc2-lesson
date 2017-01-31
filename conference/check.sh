@@ -35,12 +35,13 @@ function warn()
 
 function fexistchk()
 {
-    if [ -e "$1" ]; then
+    fname="$1"
+    if [ -e "$fname" ]; then
         ok "$1が存在します"
         return 0
     fi
     shift
-    err "$1が存在しません。$*"
+    err "$fnameが存在しません。$*"
 }
 
 function execchk()
