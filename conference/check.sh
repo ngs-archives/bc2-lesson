@@ -37,11 +37,11 @@ function fexistchk()
 {
     fname="$1"
     if [ -e "$fname" ]; then
-        ok "$1が存在します"
+        ok "${fname}が存在します"
         return 0
     fi
     shift
-    err "$fnameが存在しません。$*"
+    err "${fname}が存在しません。$*"
 }
 
 function execchk()
@@ -90,7 +90,7 @@ CHANGES=$(git diff-index --name-only HEAD --)
 
 # Checking repository
 if [ "$branch" != "bc2" ]; then
-    warn "branchがbc2ではありません。（$branchです）"
+    warn "branchがbc2ではありません。（${branch}です）"
     warn "bc2のbranchに戻してからチェックを行って下さい"
     warn "戻す方法："
     warn "  git checkout bc2"
