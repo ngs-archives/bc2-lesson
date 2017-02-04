@@ -154,7 +154,7 @@ UniValue printecho(const UniValue& params, bool fHelp)
             "print \"some string\""
             );
 
-    return params[0].get_str();
+    return params[0];
 }
 
 UniValue validateaddress(const UniValue& params, bool fHelp)
