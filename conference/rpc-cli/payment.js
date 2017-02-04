@@ -64,7 +64,6 @@ const payment = {
                 let minConfirms = 999;  // 一番低いconfirmationsの値
                 let maxConfirms = 0;    // 一番高いconfirmationsの値
 
-
                 async.eachSeries(
                     payments,
                     (payment, asyncCallback) => {
@@ -91,7 +90,6 @@ const payment = {
                             debug(`-> amount: ${amount} BTC to addr: ${transaction.address} (${confirmations} confirmations) in block ${blockhash}`);
                             const amountSatoshi = utils.satoshiFromBTC(amount);
 
-
                             // TASK 2: paymentの対応
                             // ここでは、一つのinvoiceに対するそれぞれのpaymentを一つずつ見ていく。
                             // paymentの情報を確認、集計し、
@@ -99,24 +97,18 @@ const payment = {
                             // 最後にmodel.payment.setStatusを実行すること。
                             // TODO: 上で定義したinvoiceのstatusに必要な変数を更新する
 
-
                             // TODO: TASK 2のコードをここに入れて！
-
+                            let newStatus = 'pending';
+                            if (!blockhash) {
+                              newStatus = 'reorg';
+                            } else if (confirmations >= config.requiredConfirmations) {
+                              newStatus = 'confirmed';
+                            }
 
                             // TASK 2の最後に：
-
                             model.payment.setStatus(
                                 payment._id,
-
-
-
-                                // paymentは確認されたら（confirmations >= config.requiredConfirmationsだったら)、
-                                //  'confirmed',
-                                // 未確認なら、
-                                'pending',
-                                // （修正無しではpendingになる、いつも）
-
-
+                                newStatus,
                                 asyncCallback
                             );
 

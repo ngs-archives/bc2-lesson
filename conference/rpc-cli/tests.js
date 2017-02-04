@@ -6,7 +6,12 @@
 const deasync = require('deasync');
 const chai = require('chai');
 const async = require('async');
+const values = require('object.values');
+if (!Object.values) {
+    values.shim();
+}
 const { Node, BitcoinNet, Transaction, BitcoinGraph } = require('bitcointest');
+
 const API = require('./api');
 const bitcoin = require('./bitcoin');
 const db = require('./db');
