@@ -1231,6 +1231,37 @@ UniValue reconsiderblock(const UniValue& params, bool fHelp)
     return NullUniValue;
 }
 
+UniValue findblockfortx(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "findblockfortx \"txid\" <maxDepth = 100>\n"
+            );
+
+    std::string strHash = params[0].get_str();
+    uint256 hash(uint256S(strHash));
+
+    int maxDepth = 100;
+    int currHeight = chainActive.Height();
+    if (params.size() == 2)
+      maxDepth = params[1].get_int();
+    int lastHeight = currHeight - maxDepth;
+    for (int i = currHeight; i > lastHeight; i--) {
+      CBlock block;
+      CBlockIndex *blockIndex = chainActive[i];
+      if(!ReadBlockFromDisk(block, blockIndex, Params().GetConsensus()))
+          throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+      BOOST_FOREACH(const CTransaction&tx, block.vtx)
+      {
+        if (hash == tx.GetHash())
+        {
+          return blockToJSON(block, blockIndex);
+        }
+      }
+    }
+    throw runtime_error("not found");
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
@@ -1255,6 +1286,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "gettxout",               &gettxout,               true  },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true  },
     { "blockchain",         "verifychain",            &verifychain,            true  },
+    { "blockchain",         "findblockfortx",         &findblockfortx,         true  },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true  },
