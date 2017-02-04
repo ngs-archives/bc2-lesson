@@ -27,6 +27,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "stop", 0 },
     { "setmocktime", 0 },
     { "getaddednodeinfo", 0 },
+    { "getblockatheight", 0 },
+    { "getblockatheight", 1 },
     { "generate", 0 },
     { "generate", 1 },
     { "g", 0 },
