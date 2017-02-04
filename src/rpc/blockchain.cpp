@@ -38,7 +38,7 @@ double GetDifficulty(const CBlockIndex* blockindex)
     uint32_t compactPowLimit = UintToArith256(Params().GetConsensus().powLimit).GetCompact();
     int shiftTarget = (compactPowLimit & 0xff000000) >> 24;
     uint32_t rem = compactPowLimit  & 0x00ffffff;
-    
+
     if (blockindex == NULL)
     {
         if (chainActive.Tip() == NULL)
@@ -48,7 +48,7 @@ double GetDifficulty(const CBlockIndex* blockindex)
     }
 
     int nShift = (blockindex->nBits >> 24) & 0xff;
-    
+
     double dDiff =
         (double)rem / (double)(blockindex->nBits & 0x00ffffff);
 
@@ -619,6 +619,28 @@ UniValue getblock(const UniValue& params, bool fHelp)
 
     return blockToJSON(block, pblockindex);
 }
+
+
+UniValue getblockatheight(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "getblockatheight index <verbose>"
+            );
+
+    UniValue params1(UniValue::VARR);
+    params1.push_back(params[0]);
+
+    UniValue hex = getblockhash(params1, false);
+
+    UniValue params2(UniValue::VARR);
+    params2.push_back(hex);
+    if (params.size() > 1)
+      params2.push_back(params[1].get_bool());
+
+    return getblock(params2, false);
+}
+
 
 struct CCoinsStats
 {
@@ -1209,6 +1231,37 @@ UniValue reconsiderblock(const UniValue& params, bool fHelp)
     return NullUniValue;
 }
 
+UniValue findblockfortx(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "findblockfortx \"txid\" <maxDepth = 100>\n"
+            );
+
+    std::string strHash = params[0].get_str();
+    uint256 hash(uint256S(strHash));
+
+    int maxDepth = 100;
+    int currHeight = chainActive.Height();
+    if (params.size() == 2)
+      maxDepth = params[1].get_int();
+    int lastHeight = currHeight - maxDepth;
+    for (int i = currHeight; i > lastHeight; i--) {
+      CBlock block;
+      CBlockIndex *blockIndex = chainActive[i];
+      if(!ReadBlockFromDisk(block, blockIndex, Params().GetConsensus()))
+          throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+      BOOST_FOREACH(const CTransaction&tx, block.vtx)
+      {
+        if (hash == tx.GetHash())
+        {
+          return blockToJSON(block, blockIndex);
+        }
+      }
+    }
+    throw runtime_error("not found");
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
@@ -1219,6 +1272,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "convertcompact",         &convertcompact,         true  },
     { "blockchain",         "gb",                     &getblock,               true  },
     { "blockchain",         "getblockhash",           &getblockhash,           true  },
+    { "blockchain",         "getblockatheight",       &getblockatheight,       true  },
     { "blockchain",         "gbh",                    &getblockhash,           true  },
     { "blockchain",         "getblockheader",         &getblockheader,         true  },
     { "blockchain",         "getchaintips",           &getchaintips,           true  },
@@ -1232,6 +1286,7 @@ static const CRPCCommand commands[] =
     { "blockchain",         "gettxout",               &gettxout,               true  },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true  },
     { "blockchain",         "verifychain",            &verifychain,            true  },
+    { "blockchain",         "findblockfortx",         &findblockfortx,         true  },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true  },
